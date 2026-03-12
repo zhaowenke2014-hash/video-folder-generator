@@ -6,7 +6,7 @@
     <title>视频剪辑项目文件夹生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
-        /* --- CSS 变量 (用于深浅色模式切换) --- */
+        /* --- CSS 变量 --- */
         :root {
             --bg-color: #f4f4f9;
             --panel-bg: #ffffff;
@@ -27,7 +27,6 @@
             --btn-secondary: #28a745;
             --btn-mac: #333333;
             
-            /* 现代按钮专属变量 */
             --btn-gradient: linear-gradient(135deg, #007bff 0%, #a066ff 100%);
             --btn-glow: 0 4px 15px rgba(0, 123, 255, 0.3);
             --btn-glow-hover: 0 6px 20px rgba(160, 102, 255, 0.4);
@@ -53,7 +52,6 @@
             --btn-secondary: #2ea043;
             --btn-mac: #444444;
 
-            /* 深色模式下的按钮渐变和发光 */
             --btn-gradient: linear-gradient(135deg, #3a9ad9 0%, #b07cff 100%);
             --btn-glow: 0 4px 15px rgba(58, 154, 217, 0.3);
             --btn-glow-hover: 0 6px 20px rgba(176, 124, 255, 0.4);
@@ -99,171 +97,64 @@
             overflow-y: auto;
         }
         
-        .header-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .header-title-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .header-logo {
-            width: 45px;
-            height: 45px;
-            flex-shrink: 0; 
-            border-radius: 10px; 
-            object-fit: contain; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            background-color: #fff;
-        }
+        .header-section { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-title-group { display: flex; align-items: center; gap: 15px; }
+        .header-logo { width: 45px; height: 45px; flex-shrink: 0; border-radius: 10px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.2); background-color: #fff; }
         .header-section h2 { margin: 0; font-size: 20px; color: var(--text-main); }
         
-        .theme-toggle-btn {
-            background: var(--instruction-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
+        .theme-toggle-btn { background: var(--instruction-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
         .theme-toggle-btn:hover { background: var(--hover-bg); }
 
         h3 { margin-top: 0; color: var(--text-main); }
         
-        .instructions {
-            background-color: var(--instruction-bg);
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-        .instructions ul { margin: 8px 0 0; padding-left: 20px; }
+        .instructions { background-color: var(--instruction-bg); padding: 15px; border-radius: 8px; font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .instructions strong { color: var(--text-main); }
+        .instructions ul { margin: 5px 0 10px 18px; padding-left: 0; }
+        .instructions li { margin-bottom: 4px; }
         
-        .template-selector {
-            margin-bottom: 20px;
-            background-color: var(--instruction-bg);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
+        .template-selector { margin-bottom: 20px; background-color: var(--instruction-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
         .template-selector label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: var(--text-main); }
         .tpl-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .tpl-btn {
-            background: var(--panel-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-main);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        .tpl-btn { background: var(--panel-bg); border: 1px solid var(--input-border); color: var(--text-main); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .tpl-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--text-main); font-size: 14px; }
-        input { 
-            width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; 
-            font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit;
-            background-color: var(--input-bg); color: var(--text-main); transition: 0.3s;
-        }
+        input { width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit; background-color: var(--input-bg); color: var(--text-main); transition: 0.3s; }
         input:focus { border-color: var(--accent-color); }
         
-        /* --- 现代丝滑主按钮 (Modern & Shimmer) --- */
         button.primary-btn { 
-            background: var(--btn-gradient);
-            color: white; 
-            border: none; 
-            padding: 14px 24px; 
-            font-size: 16px; 
-            border-radius: 10px; /* 稍微大一点的圆角更现代 */
-            cursor: pointer; 
-            font-weight: bold; 
-            margin-top: 10px; 
-            width: 100%;
-            position: relative;
-            overflow: hidden; /* 必须的，为了修剪流光 */
-            
-            /* 柔和的发光阴影 */
-            box-shadow: var(--btn-glow);
-            
-            /* 极其丝滑的贝塞尔曲线动效 */
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            background: var(--btn-gradient); color: white; border: none; padding: 14px 24px; font-size: 16px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; position: relative; overflow: hidden; box-shadow: var(--btn-glow); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-
-        /* 鼠标悬停时的状态：轻微浮起，发光增强 */
-        button.primary-btn:hover { 
-            transform: translateY(-2px);
-            box-shadow: var(--btn-glow-hover);
-        }
-
-        /* 鼠标点击时的反馈：缩回，阴影收敛 */
-        button.primary-btn:active {
-            transform: translateY(1px) scale(0.98);
-            box-shadow: var(--btn-glow);
-            transition: all 0.1s ease; /* 点击时的反馈要快 */
-        }
-
-        /* --- 丝滑流光动效 (Shimmer Effect) --- */
+        button.primary-btn:hover { transform: translateY(-2px); box-shadow: var(--btn-glow-hover); }
+        button.primary-btn:active { transform: translateY(1px) scale(0.98); box-shadow: var(--btn-glow); transition: all 0.1s ease; }
         button.primary-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -150%; /* 初始位置在视野外 */
-            width: 120%;
-            height: 200%;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.25) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: rotate(30deg); /* 倾斜的光束 */
-            
-            /* 流光的速度和丝滑度 */
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            opacity: 0;
+            content: ''; position: absolute; top: -50%; left: -150%; width: 120%; height: 200%;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: rotate(30deg); transition: all 1.2s ease-in-out; opacity: 0;
         }
+        button.primary-btn:hover::after { left: 150%; opacity: 1; }
 
-        /* 悬停时，流光滑过 */
-        button.primary-btn:hover::after {
-            left: 150%;
-            opacity: 1;
-        }
-
-        /* 底部离线按钮保持简洁现代 */
         .btn-row { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; }
         button.secondary-btn { background-color: var(--btn-secondary); color: white; border: none; padding: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: bold; transition: all 0.2s; }
         button.secondary-btn:hover { filter: brightness(1.1); }
         button.mac-btn { background-color: var(--btn-mac); color: white; border: none; padding: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: bold; transition: all 0.2s; }
         button.mac-btn:hover { filter: brightness(1.2); }
         
-        /* 动态树状图样式 */
-        .tree-container {
-            background-color: var(--tree-bg);
-            border: 1px solid var(--tree-border);
-            border-radius: 8px;
-            padding: 15px;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            min-height: 50vh;
-        }
+        .tree-container { background-color: var(--tree-bg); border: 1px solid var(--tree-border); border-radius: 8px; padding: 15px; font-family: 'Consolas', monospace; font-size: 14px; min-height: 50vh; }
         .node { margin-top: 6px; }
         .node-content { 
-            display: flex; align-items: center; padding: 4px 6px; 
-            cursor: grab; transition: all 0.2s; border-radius: 4px; border: 1px solid transparent;
+            display: flex; align-items: center; padding: 2px 6px; 
+            cursor: grab; border-radius: 4px; 
+            border: 2px solid transparent;
+            transition: background-color 0.1s; 
         }
         .node-content:active { cursor: grabbing; }
-        .node-content:hover { background-color: var(--hover-bg); border-color: var(--border-color); }
-        .node-content.drag-over { border-top: 2px solid var(--accent-color); background-color: var(--drag-over-bg); }
+        .node-content:hover { background-color: var(--hover-bg); }
+        .node-content.drag-over-top { border-top-color: var(--accent-color); }
+        .node-content.drag-over-bottom { border-bottom-color: var(--accent-color); }
+        .node-content.drag-over-inner { background-color: var(--drag-over-bg) !important; border-color: var(--accent-color); border-style: dashed; }
+
         .node-name { flex-grow: 1; font-weight: 500; pointer-events: none; }
         .is-file .node-name { font-weight: normal; color: var(--text-file); }
         .node-actions { display: none; margin-left: 10px; }
@@ -300,18 +191,23 @@
                 <label>📚 场景模板一键切换</label>
                 <div class="tpl-btn-group">
                     <button class="tpl-btn" onclick="loadTemplate('full')">标准全流程</button>
-                    <button class="tpl-btn" onclick="loadTemplate('corporate')">企业宣传片</button>
                     <button class="tpl-btn" onclick="loadTemplate('light')">轻量快剪版</button>
                     <button class="tpl-btn" onclick="loadTemplate('vfx')">AE特效包装</button>
+                    <button class="tpl-btn" onclick="loadTemplate('corporate')">企业宣传片</button>
                 </div>
             </div>
 
             <div class="instructions">
-                <strong>💡 使用小贴士：</strong>
+                <strong>📖 快速上手：</strong>
                 <ul>
-                    <li><strong>鼠标悬浮：</strong>移到右侧文件夹上，即可自由添加、改名或删除。</li>
-                    <li><strong>拖拽排序：</strong>按住文件夹拖拽，前面的数字序号会自动重排。</li>
-                    <li><strong>智能记忆：</strong>你的所有修改都会被自动保存在本地，下次打开直接用！如果加了后缀名 (如 .txt) 系统会自动将其变更为文件。</li>
+                    <li>第一步：选择<strong>项目日期</strong>，并填写<strong>项目名称</strong>。</li>
+                    <li>第二步：点击<strong>蓝色下载按钮</strong>，即可获得项目文件夹。</li>
+                </ul>
+                <strong>🛠️ 个性化定制：</strong>
+                <ul>
+                    <li><strong>右侧预览：</strong>鼠标悬浮可进行增删改名；长按拖拽可重新排序。</li>
+                    <li><strong>智能保存：</strong>所有修改都会<strong>自动记忆</strong>，下次打开依然有效。</li>
+                    <li><strong>文件识别：</strong>命名时带有后缀 (如 .txt) 系统会自动识别为文件。</li>
                 </ul>
             </div>
 
@@ -343,7 +239,6 @@
 <script>
     // --- 核心库：四大场景模板配置 ---
     const templates = {
-        // 1. 标准全流程
         full: [
             { id: 1, name: "1_工程文件", type: "folder", children: [
                 { id: 2, name: "1_PR工程", type: "folder", children: [] },
@@ -373,7 +268,6 @@
             ]},
             { id: 27, name: "5_成片归档_{DATE}_{NAME}", type: "folder", children: [] }
         ],
-        // 2. 企业宣传片版
         corporate: [
             { id: 301, name: "1_项目管理与策划", type: "folder", children: [
                 { id: 302, name: "1_脚本分镜", type: "folder", children: [] },
@@ -396,7 +290,6 @@
                 { id: 317, name: "3_最终交付版", type: "folder", children: [] }
             ]}
         ],
-        // 3. 轻量快剪版
         light: [
             { id: 101, name: "1_剪辑工程", type: "folder", children: [
                 { id: 102, name: "1_剪映工程", type: "folder", children: [] },
@@ -412,7 +305,6 @@
                 { id: 110, name: "2_最终定稿", type: "folder", children: [] }
             ]}
         ],
-        // 4. AE特效包装版
         vfx: [
             { id: 201, name: "1_AE合成工程", type: "folder", children: [
                 { id: 202, name: "#{DATE}_{NAME}_Comp.aep", type: "file", children: [] }
@@ -437,221 +329,138 @@
 
     let templateData = [];
     let nextId = 500; 
+    let draggedNodeId = null;
+    let currentDropPosition = ''; 
     
-    // --- 本地存储 (Memory) 逻辑 ---
-    function saveState() {
-        localStorage.setItem('videoProjectGeneratorState', JSON.stringify(templateData));
-    }
-
+    function saveState() { localStorage.setItem('videoProjectGeneratorState', JSON.stringify(templateData)); }
     function loadState() {
         let saved = localStorage.getItem('videoProjectGeneratorState');
-        if (saved) {
-            templateData = JSON.parse(saved);
-        } else {
-            templateData = JSON.parse(JSON.stringify(templates.full)); 
-        }
+        if (saved) templateData = JSON.parse(saved);
+        else templateData = JSON.parse(JSON.stringify(templates.full)); 
         renderTree();
     }
-
     function loadTemplate(type) {
-        let nameMap = {
-            'full': '标准全流程',
-            'corporate': '企业宣传片',
-            'light': '轻量快剪版',
-            'vfx': 'AE特效包装版'
-        };
+        let nameMap = { 'full': '标准全流程', 'corporate': '企业宣传片', 'light': '轻量快剪版', 'vfx': 'AE特效包装版' };
         if(confirm(`切换为【${nameMap[type]}】将会覆盖你当前的自定义修改。是否继续？`)) {
             templateData = JSON.parse(JSON.stringify(templates[type]));
-            renderTree();
-            saveState();
+            renderTree(); saveState();
         }
     }
-
-    // --- 主题切换 (Dark Mode) 逻辑 ---
     function toggleTheme() {
         const body = document.body;
         const btn = document.getElementById('themeBtn');
         body.classList.toggle('dark-mode');
-        
-        if (body.classList.contains('dark-mode')) {
-            btn.innerHTML = '☀️ 浅色';
-            localStorage.setItem('theme', 'dark');
-        } else {
-            btn.innerHTML = '🌙 深色';
-            localStorage.setItem('theme', 'light');
-        }
+        if (body.classList.contains('dark-mode')) { btn.innerHTML = '☀️ 浅色'; localStorage.setItem('theme', 'dark'); }
+        else { btn.innerHTML = '🌙 深色'; localStorage.setItem('theme', 'light'); }
     }
-
     function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('themeBtn').innerHTML = '☀️ 浅色';
+        if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); document.getElementById('themeBtn').innerHTML = '☀️ 浅色'; }
+    }
+
+    function handleDragStart(e, id) { draggedNodeId = id; e.dataTransfer.effectAllowed = "move"; setTimeout(() => e.target.style.opacity = "0.5", 0); }
+    function handleDragEnd(e) { e.target.style.opacity = "1"; currentDropPosition = ''; }
+    function handleDragOver(e, id) {
+        e.preventDefault(); e.stopPropagation();
+        let targetEl = e.currentTarget;
+        let rect = targetEl.getBoundingClientRect();
+        let y = e.clientY - rect.top; 
+        targetEl.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inner');
+        if (id === 'root') { currentDropPosition = 'inner'; targetEl.classList.add('drag-over-inner'); return; }
+        let targetInfo = findNodeAndParent(templateData, id);
+        let isFolder = targetInfo && targetInfo.node.type === 'folder';
+        if (y < rect.height * 0.25) { currentDropPosition = 'top'; targetEl.classList.add('drag-over-top'); }
+        else if (y > rect.height * 0.75) { currentDropPosition = 'bottom'; targetEl.classList.add('drag-over-bottom'); }
+        else {
+            if (isFolder) { currentDropPosition = 'inner'; targetEl.classList.add('drag-over-inner'); }
+            else { currentDropPosition = 'bottom'; targetEl.classList.add('drag-over-bottom'); }
         }
     }
+    function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inner'); }
 
-    // --- 拖拽与树状图操作逻辑 ---
-    let draggedNodeId = null;
-
-    function handleDragStart(e, id) {
-        draggedNodeId = id;
-        e.dataTransfer.effectAllowed = "move";
-        setTimeout(() => e.target.style.opacity = "0.5", 0); 
+    function isDescendant(draggedNode, targetId) {
+        if (!draggedNode.children) return false;
+        for (let child of draggedNode.children) { if (child.id === targetId) return true; if (isDescendant(child, targetId)) return true; }
+        return false;
     }
-
-    function handleDragEnd(e) { e.target.style.opacity = "1"; }
-    function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
-    function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 
     function handleDrop(e, targetId) {
-        e.preventDefault();
-        e.currentTarget.classList.remove('drag-over');
+        e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-inner');
         if (!draggedNodeId || draggedNodeId === targetId) return;
-
         let draggedInfo = findNodeAndParent(templateData, draggedNodeId);
-        let targetInfo = targetId === 'root' ? { parentArray: templateData } : findNodeAndParent(templateData, targetId);
-
+        let targetInfo = targetId === 'root' ? { node: { type: 'folder', children: templateData }, parentArray: null } : findNodeAndParent(templateData, targetId);
         if (draggedInfo && targetInfo) {
+            if (isDescendant(draggedInfo.node, targetId)) { alert("⛔ 操作被拦截：你不能把一个文件夹塞进它自己的子文件夹里哦！"); return; }
             let sArr = draggedInfo.parentArray;
-            let tArr = targetInfo.parentArray;
-
             let sIndex = sArr.findIndex(n => n.id === draggedNodeId);
             let nodeToMove = sArr.splice(sIndex, 1)[0];
-
-            if (targetId === 'root') {
-                tArr.push(nodeToMove);
-            } else {
+            if (targetId === 'root') { templateData.push(nodeToMove); autoRenumber(templateData); }
+            else {
+                let tArr = targetInfo.parentArray;
                 let tIndex = tArr.findIndex(n => n.id === targetId);
-                tArr.splice(tIndex, 0, nodeToMove);
+                if (currentDropPosition === 'top') { tArr.splice(tIndex, 0, nodeToMove); autoRenumber(tArr); }
+                else if (currentDropPosition === 'bottom') { tArr.splice(tIndex + 1, 0, nodeToMove); autoRenumber(tArr); }
+                else if (currentDropPosition === 'inner') { targetInfo.node.children.push(nodeToMove); autoRenumber(targetInfo.node.children); }
             }
-
-            autoRenumber(sArr);
-            if (sArr !== tArr) autoRenumber(tArr);
-
-            renderTree();
-            saveState(); 
+            autoRenumber(sArr); renderTree(); saveState(); 
         }
-        draggedNodeId = null;
+        draggedNodeId = null; currentDropPosition = '';
     }
 
     function autoRenumber(nodesArray) {
         let counter = 1;
-        nodesArray.forEach(node => {
-            if (/^\d+_/.test(node.name)) {
-                node.name = node.name.replace(/^\d+_/, counter + '_');
-                counter++;
-            }
-        });
+        nodesArray.forEach(node => { if (/^\d+_/.test(node.name)) { node.name = node.name.replace(/^\d+_/, counter + '_'); counter++; } });
     }
 
-    // --- 基础工具函数 ---
     function getTodayForInput() {
         let today = new Date();
-        let yyyy = today.getFullYear();
-        let mm = String(today.getMonth() + 1).padStart(2, '0');
-        let dd = String(today.getDate()).padStart(2, '0');
-        return yyyy + '-' + mm + '-' + dd;
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     }
-
     function getSelectedDateString() {
         let dateInput = document.getElementById('projectDate').value;
-        if (!dateInput) return getTodayForInput().replace(/-/g, '');
-        return dateInput.replace(/-/g, '');
+        return (dateInput || getTodayForInput()).replace(/-/g, '');
     }
-
     function getProjectName() {
         let name = document.getElementById('projectName').value.trim();
         return name === "" ? "未命名项目" : name;
     }
-
     function parseVars(str) {
-        let dateStr = getSelectedDateString();
-        let nameStr = getProjectName();
-        return str.replace(/\{DATE\}/g, dateStr).replace(/\{NAME\}/g, nameStr);
+        return str.replace(/\{DATE\}/g, getSelectedDateString()).replace(/\{NAME\}/g, getProjectName());
     }
-
-    function findNodeAndParent(nodes, id, parent = null) {
+    function findNodeAndParent(nodes, id) {
         for (let i = 0; i < nodes.length; i++) {
             if (nodes[i].id === id) return { node: nodes[i], parentArray: nodes };
-            if (nodes[i].children) {
-                let result = findNodeAndParent(nodes[i].children, id, nodes[i]);
-                if (result) return result;
-            }
+            if (nodes[i].children) { let result = findNodeAndParent(nodes[i].children, id); if (result) return result; }
         }
         return null;
     }
-
-    // --- 节点操作 (增删改) ---
-    function getNextId() {
-        nextId++;
-        return nextId;
-    }
-
+    function getNextId() { return ++nextId; }
     function addNode(parentId) {
-        let newName = prompt("请输入新名称:\n(提示: 包含扩展名如 .txt 识别为文件，以数字下划线如 '1_' 开头可参与自动排序)");
+        let newName = prompt("请输入新名称:\n(提示: 包含扩展名如 .txt 识别为文件，以数字下划线开头如 '1_' 可参与自动排序)");
         if (!newName || newName.trim() === "") return;
-        
         let type = newName.includes('.') ? "file" : "folder";
         let newNode = { id: getNextId(), name: newName.trim(), type: type, children: [] };
-
-        if (parentId === 'root') {
-            templateData.push(newNode);
-            autoRenumber(templateData);
-        } else {
-            let target = findNodeAndParent(templateData, parentId);
-            if (target && target.node.type === "folder") {
-                target.node.children.push(newNode);
-                autoRenumber(target.node.children);
-            }
-        }
-        renderTree();
-        saveState();
+        if (parentId === 'root') { templateData.push(newNode); autoRenumber(templateData); }
+        else { let target = findNodeAndParent(templateData, parentId); if (target && target.node.type === "folder") { target.node.children.push(newNode); autoRenumber(target.node.children); } }
+        renderTree(); saveState();
     }
-
     function renameNode(id) {
         let target = findNodeAndParent(templateData, id);
         if (target) {
             let newName = prompt("请输入新的名称:", target.node.name);
-            if (newName && newName.trim() !== "") {
-                target.node.name = newName.trim();
-                target.node.type = newName.includes('.') ? "file" : "folder"; 
-                autoRenumber(target.parentArray);
-                renderTree();
-                saveState();
-            }
+            if (newName && newName.trim() !== "") { target.node.name = newName.trim(); target.node.type = newName.includes('.') ? "file" : "folder"; autoRenumber(target.parentArray); renderTree(); saveState(); }
         }
     }
-
     function deleteNode(id) {
         let target = findNodeAndParent(templateData, id);
-        if (target) {
-            if(confirm(`确定要删除 [${parseVars(target.node.name)}] 吗？`)) {
-                let index = target.parentArray.findIndex(n => n.id === id);
-                if (index > -1) {
-                    target.parentArray.splice(index, 1);
-                    autoRenumber(target.parentArray);
-                }
-                renderTree();
-                saveState();
-            }
-        }
+        if (target && confirm(`确定要删除 [${parseVars(target.node.name)}] 吗？`)) { let index = target.parentArray.findIndex(n => n.id === id); if (index > -1) { target.parentArray.splice(index, 1); autoRenumber(target.parentArray); } renderTree(); saveState(); }
     }
 
-    // --- 渲染 UI ---
     function createNodeHTML(node) {
         let actualName = parseVars(node.name);
         let icon = node.type === 'folder' ? '📁' : '📄';
-        let isFileClass = node.type === 'file' ? 'is-file' : '';
-        
-        let html = `
-            <div class="node ${isFileClass}">
-                <div class="node-content" 
-                     draggable="true" 
-                     ondragstart="handleDragStart(event, ${node.id})" 
-                     ondragend="handleDragEnd(event)"
-                     ondragover="handleDragOver(event)" 
-                     ondragleave="handleDragLeave(event)" 
-                     ondrop="handleDrop(event, ${node.id})">
+        return `
+            <div class="node ${node.type === 'file' ? 'is-file' : ''}">
+                <div class="node-content" draggable="true" ondragstart="handleDragStart(event, ${node.id})" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event, ${node.id})" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${node.id})">
                     <span class="node-name">${icon} ${actualName}</span>
                     <div class="node-actions">
                         ${node.type === 'folder' ? `<button class="action-btn" onclick="addNode(${node.id})">[+加子项]</button>` : ''}
@@ -659,152 +468,57 @@
                         <button class="action-btn del" onclick="deleteNode(${node.id})">[删]</button>
                     </div>
                 </div>
-        `;
-        
-        if (node.children && node.children.length > 0) {
-            html += `<div class="children-container">`;
-            node.children.forEach(child => { html += createNodeHTML(child); });
-            html += `</div>`;
-        }
-        html += `</div>`;
-        return html;
+                ${(node.children && node.children.length > 0) ? `<div class="children-container">${node.children.map(child => createNodeHTML(child)).join('')}</div>` : ''}
+            </div>`;
     }
 
     function renderTree() {
-        let rootName = `${getSelectedDateString()}_${getProjectName()}`;
         let container = document.getElementById('treeWindow');
-        
-        let html = `
+        container.innerHTML = `
             <div class="node">
-                <div class="node-content"
-                     ondragover="handleDragOver(event)" 
-                     ondragleave="handleDragLeave(event)" 
-                     ondrop="handleDrop(event, 'root')">
-                    <span class="node-name" style="font-weight:bold; color:var(--accent-color);">📦 ${rootName} (根目录)</span>
-                    <div class="node-actions">
-                        <button class="action-btn" onclick="addNode('root')">[+新建一级目录]</button>
-                    </div>
+                <div class="node-content" ondragover="handleDragOver(event, 'root')" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'root')">
+                    <span class="node-name" style="font-weight:bold; color:var(--accent-color);">📦 ${getSelectedDateString()}_${getProjectName()} (根目录)</span>
+                    <div class="node-actions"><button class="action-btn" onclick="addNode('root')">[+新建一级目录]</button></div>
                 </div>
-                <div class="children-container" style="border-left: 2px solid var(--accent-color);">
-        `;
-        
-        templateData.forEach(node => { html += createNodeHTML(node); });
-        
-        html += `</div></div>`;
-        container.innerHTML = html;
+                <div class="children-container" style="border-left: 2px solid var(--accent-color);">${templateData.map(node => createNodeHTML(node)).join('')}</div>
+            </div>`;
     }
 
-    // --- ZIP 生成逻辑 ---
     function buildZipRecursively(zipFolder, nodes) {
         nodes.forEach(node => {
             let actualName = parseVars(node.name);
-            if (node.type === 'folder') {
-                let newFolder = zipFolder.folder(actualName);
-                if (node.children && node.children.length > 0) {
-                    buildZipRecursively(newFolder, node.children);
-                }
-            } else {
-                zipFolder.file(actualName, ""); 
-            }
+            if (node.type === 'folder') { let newFolder = zipFolder.folder(actualName); if (node.children && node.children.length > 0) buildZipRecursively(newFolder, node.children); }
+            else { zipFolder.file(actualName, ""); }
         });
     }
 
     function generateProject() {
-        if (typeof JSZip === 'undefined') { alert("ZIP 组件加载失败，请检查网络！"); return; }
+        if (typeof JSZip === 'undefined') { alert("ZIP 组件加载失败！"); return; }
         let rootFolderName = `${getSelectedDateString()}_${getProjectName()}`;
-        let zip = new JSZip();
-        let root = zip.folder(rootFolderName);
-        buildZipRecursively(root, templateData);
-        
-        // 增加一点点击反馈的视觉延迟感，让按钮动画走完
-        setTimeout(() => {
-            zip.generateAsync({type:"blob"}).then(function(content) {
-                let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = rootFolderName + ".zip"; link.click(); URL.revokeObjectURL(link.href);
-            }).catch(function(err) { alert("生成 ZIP 失败：" + err); });
-        }, 200);
+        let zip = new JSZip(); buildZipRecursively(zip.folder(rootFolderName), templateData);
+        setTimeout(() => { zip.generateAsync({type:"blob"}).then(content => { let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = rootFolderName + ".zip"; link.click(); }); }, 200);
     }
 
-    // --- BAT 动态脚本生成引擎 ---
     function generateBatScript() {
-        let lines = [
-            "@echo off", "chcp 65001 >nul",
-            "set /p ProjectName=\"请输入项目名称 (例如: 汽车测评): \"",
-            "if \"%ProjectName%\"==\"\" set ProjectName=未命名项目", "",
-            ":: 获取当前日期 YYYYMMDD",
-            "for /f %%i in ('powershell -command \"Get-Date -Format yyyyMMdd\"') do set DATE_STR=%%i", "",
-            "set \"ROOT_DIR=%USERPROFILE%\\Desktop\\%DATE_STR%_%ProjectName%\"", "",
-            "mkdir \"%ROOT_DIR%\" 2>nul"
-        ];
-
-        function traverseForBat(nodes, currentPath) {
-            nodes.forEach(node => {
-                let safeName = node.name.replace(/\{DATE\}/g, "%DATE_STR%").replace(/\{NAME\}/g, "%ProjectName%");
-                let newPath = currentPath + "\\\\" + safeName;
-                if (node.type === 'folder') {
-                    lines.push(`mkdir "${newPath}"`);
-                    if (node.children) traverseForBat(node.children, newPath);
-                } else {
-                    lines.push(`type nul > "${newPath}"`);
-                }
-            });
-        }
-        traverseForBat(templateData, "%ROOT_DIR%");
-        lines.push("", "start \"\" \"%ROOT_DIR%\"");
-        return lines;
+        let lines = ["@echo off", "chcp 65001 >nul", "set /p ProjectName=\"请输入项目名称: \"", "if \"%ProjectName%\"==\"\" set ProjectName=未命名项目", "for /f %%i in ('powershell -command \"Get-Date -Format yyyyMMdd\"') do set DATE_STR=%%i", "set \"ROOT_DIR=%USERPROFILE%\\Desktop\\%DATE_STR%_%ProjectName%\"", "mkdir \"%ROOT_DIR%\" 2>nul"];
+        function traverse(nodes, currentPath) { nodes.forEach(node => { let safeName = node.name.replace(/\{DATE\}/g, "%DATE_STR%").replace(/\{NAME\}/g, "%ProjectName%"); let newPath = currentPath + "\\\\" + safeName; if (node.type === 'folder') { lines.push(`mkdir "${newPath}"`); if (node.children) traverse(node.children, newPath); } else { lines.push(`type nul > "${newPath}"`); } }); }
+        traverse(templateData, "%ROOT_DIR%"); lines.push("start \"\" \"%ROOT_DIR%\""); return lines;
     }
-
     function downloadBatZip() {
-        let zip = new JSZip();
-        zip.file("新建剪辑项目_Win离线版.bat", generateBatScript().join('\r\n'));
-        zip.file("Windows电脑如何运行.txt", "1.右键下载的 .bat 文件选择属性，勾选[解除锁定]\r\n2.双击运行即可根据最新模板生成结构。");
-        zip.generateAsync({type:"blob"}).then(content => {
-            let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Win离线版生成器.zip"; link.click();
-        });
+        let zip = new JSZip(); zip.file("新建剪辑项目_Win离线版.bat", generateBatScript().join('\r\n')); zip.file("Windows电脑如何运行.txt", "1.右键属性勾选[解除锁定]\r\n2.双击即可生成。");
+        zip.generateAsync({type:"blob"}).then(content => { let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Win离线版生成器.zip"; link.click(); });
     }
-
-    // --- Mac 动态脚本生成引擎 ---
     function generateMacScript() {
-        let lines = [
-            "#!/bin/bash", "",
-            "echo \"请输入项目名称 (例如: 汽车测评):\"",
-            "read ProjectName",
-            "if [ -z \"$ProjectName\" ]; then ProjectName=\"未命名项目\"; fi", "",
-            "DATE_STR=$(date +%Y%m%d)",
-            "ROOT_DIR=\"$HOME/Desktop/${DATE_STR}_${ProjectName}\"", ""
-        ];
-
-        function traverseForMac(nodes, currentPath) {
-            nodes.forEach(node => {
-                let safeName = node.name.replace(/\{DATE\}/g, "${DATE_STR}").replace(/\{NAME\}/g, "${ProjectName}");
-                let newPath = currentPath + "/" + safeName;
-                if (node.type === 'folder') {
-                    lines.push(`mkdir -p "${newPath}"`);
-                    if (node.children) traverseForMac(node.children, newPath);
-                } else {
-                    lines.push(`touch "${newPath}"`);
-                }
-            });
-        }
-        traverseForMac(templateData, "$ROOT_DIR");
-        lines.push("", "open \"$ROOT_DIR\"");
-        return lines;
+        let lines = ["#!/bin/bash", "echo \"请输入项目名称:\"", "read ProjectName", "if [ -z \"$ProjectName\" ]; then ProjectName=\"未命名项目\"; fi", "DATE_STR=$(date +%Y%m%d)", "ROOT_DIR=\"$HOME/Desktop/${DATE_STR}_${ProjectName}\""];
+        function traverse(nodes, currentPath) { nodes.forEach(node => { let safeName = node.name.replace(/\{DATE\}/g, "${DATE_STR}").replace(/\{NAME\}/g, "${ProjectName}"); let newPath = currentPath + "/" + safeName; if (node.type === 'folder') { lines.push(`mkdir -p "${newPath}"`); if (node.children) traverse(node.children, newPath); } else { lines.push(`touch "${newPath}"`); } }); }
+        traverse(templateData, "$ROOT_DIR"); lines.push("", "open \"$ROOT_DIR\""); return lines;
     }
-
     function downloadCommandZip() {
-        let zip = new JSZip();
-        zip.file("新建剪辑项目_Mac离线版.command", generateMacScript().join('\n'));
-        zip.file("Mac电脑如何运行.txt", "首次运行需打开终端，输入 chmod +x 并空格，然后将 .command 文件拖入回车，赋予权限后即可双击运行。");
-        zip.generateAsync({type:"blob"}).then(content => {
-            let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Mac离线版生成器.zip"; link.click();
-        });
+        let zip = new JSZip(); zip.file("新建剪辑项目_Mac离线版.command", generateMacScript().join('\n')); zip.file("Mac电脑如何运行.txt", "首次运行需在终端输入 chmod +x 并拖入文件回车。");
+        zip.generateAsync({type:"blob"}).then(content => { let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Mac离线版生成器.zip"; link.click(); });
     }
 
-    // --- 初始化 ---
-    document.addEventListener('DOMContentLoaded', function() {
-        initTheme();
-        document.getElementById('projectDate').value = getTodayForInput();
-        loadState(); 
-    });
+    document.addEventListener('DOMContentLoaded', () => { initTheme(); document.getElementById('projectDate').value = getTodayForInput(); loadState(); });
 </script>
 
 </body>
