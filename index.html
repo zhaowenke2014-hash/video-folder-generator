@@ -6,9 +6,63 @@
     <title>视频剪辑项目文件夹生成器</title>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <style>
+        /* --- CSS 变量 (用于深浅色模式切换) --- */
+        :root {
+            --bg-color: #f4f4f9;
+            --panel-bg: #ffffff;
+            --right-panel-bg: #fafafa;
+            --text-main: #333333;
+            --text-muted: #555555;
+            --text-file: #666666;
+            --border-color: #eeeeee;
+            --input-border: #cccccc;
+            --input-bg: #ffffff;
+            --hover-bg: #f0f8ff;
+            --drag-over-bg: #e6f2ff;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --tree-bg: #ffffff;
+            --tree-border: #dddddd;
+            --instruction-bg: #e9ecef;
+            --btn-secondary: #28a745;
+            --btn-mac: #333333;
+            
+            /* 现代按钮专属变量 */
+            --btn-gradient: linear-gradient(135deg, #007bff 0%, #a066ff 100%);
+            --btn-glow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            --btn-glow-hover: 0 6px 20px rgba(160, 102, 255, 0.4);
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --right-panel-bg: #181818;
+            --text-main: #e0e0e0;
+            --text-muted: #aaaaaa;
+            --text-file: #888888;
+            --border-color: #333333;
+            --input-border: #444444;
+            --input-bg: #2d2d2d;
+            --hover-bg: #2a2d31;
+            --drag-over-bg: #1a2a3a;
+            --accent-color: #0a84ff;
+            --accent-hover: #0066cc;
+            --tree-bg: #252526;
+            --tree-border: #333333;
+            --instruction-bg: #2a2a2a;
+            --btn-secondary: #2ea043;
+            --btn-mac: #444444;
+
+            /* 深色模式下的按钮渐变和发光 */
+            --btn-gradient: linear-gradient(135deg, #3a9ad9 0%, #b07cff 100%);
+            --btn-glow: 0 4px 15px rgba(58, 154, 217, 0.3);
+            --btn-glow-hover: 0 6px 20px rgba(176, 124, 255, 0.4);
+        }
+
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f4f4f9; 
+            background-color: var(--bg-color); 
+            color: var(--text-main);
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -16,144 +70,216 @@
             margin: 0; 
             padding: 20px;
             box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container { 
-            background: #fff; 
+            background: var(--panel-bg); 
             border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15); 
             display: flex;
             flex-direction: row;
             width: 100%; 
-            max-width: 1050px; 
+            max-width: 1100px; 
             overflow: hidden;
-            height: 85vh;
+            height: 88vh;
+            border: 1px solid var(--border-color);
         }
         .left-panel {
-            padding: 40px;
+            padding: 35px;
             flex: 1;
-            border-right: 1px solid #eee;
+            border-right: 1px solid var(--border-color);
             overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
         .right-panel {
-            padding: 40px;
+            padding: 35px;
             flex: 1.2;
-            background-color: #fafafa;
+            background-color: var(--right-panel-bg);
             overflow-y: auto;
         }
         
-        /* 标题与图标布局 */
         .header-section {
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
         .header-logo {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             flex-shrink: 0; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             object-fit: contain; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             background-color: #fff;
         }
-        .header-section h2 { 
-            margin: 0; 
-            color: #333; 
-            font-size: 24px;
-        }
+        .header-section h2 { margin: 0; font-size: 20px; color: var(--text-main); }
         
-        h3 { margin-top: 0; color: #333; }
-        .instructions {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 6px;
+        .theme-toggle-btn {
+            background: var(--instruction-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
             font-size: 13px;
-            color: #555;
+            transition: all 0.2s;
+        }
+        .theme-toggle-btn:hover { background: var(--hover-bg); }
+
+        h3 { margin-top: 0; color: var(--text-main); }
+        
+        .instructions {
+            background-color: var(--instruction-bg);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
             line-height: 1.6;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
         }
         .instructions ul { margin: 8px 0 0; padding-left: 20px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; font-size: 14px; }
-        input { 
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; 
-            font-size: 15px; outline: none; box-sizing: border-box; font-family: inherit;
-        }
-        input:focus { border-color: #007bff; }
         
-        /* 按钮样式 */
+        .template-selector {
+            margin-bottom: 20px;
+            background-color: var(--instruction-bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .template-selector label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: var(--text-main); }
+        .tpl-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tpl-btn {
+            background: var(--panel-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tpl-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--text-main); font-size: 14px; }
+        input { 
+            width: 100%; padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; 
+            font-size: 14px; outline: none; box-sizing: border-box; font-family: inherit;
+            background-color: var(--input-bg); color: var(--text-main); transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent-color); }
+        
+        /* --- 现代丝滑主按钮 (Modern & Shimmer) --- */
         button.primary-btn { 
-            background-color: #007bff; color: white; border: none; padding: 14px 24px; 
-            font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.3s; 
-            width: 100%; font-weight: bold; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,123,255,0.2);
+            background: var(--btn-gradient);
+            color: white; 
+            border: none; 
+            padding: 14px 24px; 
+            font-size: 16px; 
+            border-radius: 10px; /* 稍微大一点的圆角更现代 */
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-top: 10px; 
+            width: 100%;
+            position: relative;
+            overflow: hidden; /* 必须的，为了修剪流光 */
+            
+            /* 柔和的发光阴影 */
+            box-shadow: var(--btn-glow);
+            
+            /* 极其丝滑的贝塞尔曲线动效 */
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        button.primary-btn:hover { background-color: #0056b3; }
 
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: auto; 
-            padding-top: 30px; 
+        /* 鼠标悬停时的状态：轻微浮起，发光增强 */
+        button.primary-btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: var(--btn-glow-hover);
         }
 
-        button.secondary-btn { 
-            background-color: #28a745; color: white; border: none; padding: 12px; 
-            font-size: 14px; border-radius: 6px; cursor: pointer; transition: background 0.3s; 
-            flex: 1; font-weight: bold; box-shadow: 0 4px 6px rgba(40,167,69,0.2);
+        /* 鼠标点击时的反馈：缩回，阴影收敛 */
+        button.primary-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: var(--btn-glow);
+            transition: all 0.1s ease; /* 点击时的反馈要快 */
         }
-        button.secondary-btn:hover { background-color: #218838; }
 
-        button.mac-btn { 
-            background-color: #333; color: white; border: none; padding: 12px; 
-            font-size: 14px; border-radius: 6px; cursor: pointer; transition: background 0.3s; 
-            flex: 1; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        /* --- 丝滑流光动效 (Shimmer Effect) --- */
+        button.primary-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%; /* 初始位置在视野外 */
+            width: 120%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.25) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg); /* 倾斜的光束 */
+            
+            /* 流光的速度和丝滑度 */
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
         }
-        button.mac-btn:hover { background-color: #111; }
+
+        /* 悬停时，流光滑过 */
+        button.primary-btn:hover::after {
+            left: 150%;
+            opacity: 1;
+        }
+
+        /* 底部离线按钮保持简洁现代 */
+        .btn-row { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; }
+        button.secondary-btn { background-color: var(--btn-secondary); color: white; border: none; padding: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: bold; transition: all 0.2s; }
+        button.secondary-btn:hover { filter: brightness(1.1); }
+        button.mac-btn { background-color: var(--btn-mac); color: white; border: none; padding: 12px; font-size: 14px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: bold; transition: all 0.2s; }
+        button.mac-btn:hover { filter: brightness(1.2); }
         
         /* 动态树状图样式 */
         .tree-container {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            background-color: var(--tree-bg);
+            border: 1px solid var(--tree-border);
+            border-radius: 8px;
             padding: 15px;
             font-family: 'Consolas', monospace;
             font-size: 14px;
+            min-height: 50vh;
         }
         .node { margin-top: 6px; }
         .node-content { 
-            display: flex; align-items: center; padding: 4px 0; 
-            cursor: grab; /* 增加抓取手势提示 */
-            transition: all 0.2s;
+            display: flex; align-items: center; padding: 4px 6px; 
+            cursor: grab; transition: all 0.2s; border-radius: 4px; border: 1px solid transparent;
         }
         .node-content:active { cursor: grabbing; }
-        .node-content:hover { background-color: #f0f8ff; border-radius: 4px; }
-        
-        /* 拖拽悬浮时的指示线 */
-        .node-content.drag-over {
-            border-top: 2px solid #007bff;
-            background-color: #e6f2ff;
-        }
-
-        .node-name { flex-grow: 1; font-weight: 500; color: #333; pointer-events: none; }
-        .is-file .node-name { font-weight: normal; color: #666; }
+        .node-content:hover { background-color: var(--hover-bg); border-color: var(--border-color); }
+        .node-content.drag-over { border-top: 2px solid var(--accent-color); background-color: var(--drag-over-bg); }
+        .node-name { flex-grow: 1; font-weight: 500; pointer-events: none; }
+        .is-file .node-name { font-weight: normal; color: var(--text-file); }
         .node-actions { display: none; margin-left: 10px; }
         .node-content:hover .node-actions { display: block; }
-        .action-btn { 
-            background: none; border: none; color: #007bff; cursor: pointer; 
-            font-size: 12px; padding: 0 4px; font-family: inherit;
-        }
-        .action-btn:hover { color: #0056b3; text-decoration: underline; }
+        .action-btn { background: none; border: none; color: var(--accent-color); cursor: pointer; font-size: 12px; padding: 0 4px; }
+        .action-btn:hover { text-decoration: underline; }
         .action-btn.del { color: #dc3545; }
-        .action-btn.del:hover { color: #a71d2a; }
-        .children-container { margin-left: 24px; border-left: 1px dashed #ccc; padding-left: 8px; }
+
+        .children-container { margin-left: 24px; border-left: 1px dashed var(--input-border); padding-left: 8px; }
 
         @media (max-width: 768px) {
             .container { flex-direction: column; height: auto; }
-            .left-panel { border-right: none; border-bottom: 1px solid #eee; }
+            .left-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
             .btn-row { flex-direction: column; margin-top: 20px; }
+            .header-section { flex-direction: column; align-items: flex-start; }
+            .theme-toggle-btn { position: absolute; top: 10px; right: 10px; }
         }
     </style>
 </head>
@@ -163,16 +289,29 @@
     <div class="left-panel">
         <div>
             <div class="header-section">
-                <img src="icon.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
-                <h2>视频剪辑项目文件夹生成器</h2>
+                <div class="header-title-group">
+                    <img src="icon.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+                    <h2>视频剪辑文件夹项目生成器 <span style="font-size:12px;color:var(--accent-color);vertical-align:top;">Pro</span></h2>
+                </div>
+                <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
             </div>
             
+            <div class="template-selector">
+                <label>📚 场景模板一键切换</label>
+                <div class="tpl-btn-group">
+                    <button class="tpl-btn" onclick="loadTemplate('full')">标准全流程</button>
+                    <button class="tpl-btn" onclick="loadTemplate('corporate')">企业宣传片</button>
+                    <button class="tpl-btn" onclick="loadTemplate('light')">轻量快剪版</button>
+                    <button class="tpl-btn" onclick="loadTemplate('vfx')">AE特效包装</button>
+                </div>
+            </div>
+
             <div class="instructions">
-                <strong>💡 使用与自定义说明：</strong>
+                <strong>💡 使用小贴士：</strong>
                 <ul>
-                    <li>修改日期和名称，右侧预览会自动更新。</li>
-                    <li><strong>按住并拖拽</strong>任何文件夹可以进行排序，前面的序号会自动重排。</li>
-                    <li>悬浮在文件夹上可使用 <code>[+加子项]</code> <code>[改名]</code> <code>[删]</code>。带有后缀名(如 .txt)将自动识别为文件。</li>
+                    <li><strong>鼠标悬浮：</strong>移到右侧文件夹上，即可自由添加、改名或删除。</li>
+                    <li><strong>拖拽排序：</strong>按住文件夹拖拽，前面的数字序号会自动重排。</li>
+                    <li><strong>智能记忆：</strong>你的所有修改都会被自动保存在本地，下次打开直接用！如果加了后缀名 (如 .txt) 系统会自动将其变更为文件。</li>
                 </ul>
             </div>
 
@@ -186,89 +325,187 @@
                 <input type="text" id="projectName" placeholder="例如: 汽车测评" oninput="renderTree()">
             </div>
 
-            <button class="primary-btn" onclick="generateProject()">🚀 一键生成 ZIP 下载</button>
+            <button class="primary-btn" onclick="generateProject()">一键生成 ZIP 下载</button>
         </div>
         
         <div class="btn-row">
-            <button class="secondary-btn" onclick="downloadBatZip()">⬇️ Win 离线版 (.zip)</button>
-            <button class="mac-btn" onclick="downloadCommandZip()">⬇️ Mac 离线版 (.zip)</button>
+            <button class="secondary-btn" onclick="downloadBatZip()">⬇️ Win 离线版</button>
+            <button class="mac-btn" onclick="downloadCommandZip()">⬇️ Mac 离线版</button>
         </div>
     </div>
 
     <div class="right-panel">
-        <h3>实时结构预览 (可自由拖拽编辑)</h3>
+        <h3>实时结构预览 <span style="font-size:12px;font-weight:normal;color:var(--text-muted);">(自动保存 ✅)</span></h3>
         <div class="tree-container" id="treeWindow"></div>
     </div>
 </div>
 
 <script>
-    // --- 数据模型 ---
-    let nextId = 100;
-    let templateData = [
-        { id: 1, name: "1_工程文件", type: "folder", children: [
-            { id: 2, name: "1_PR工程", type: "folder", children: [] },
-            { id: 3, name: "2_AE工程", type: "folder", children: [] },
-            { id: 4, name: "3_剪映工程", type: "folder", children: [] },
-            { id: 5, name: "4_达芬奇工程", type: "folder", children: [] },
-            { id: 6, name: "#{DATE}_{NAME}_版本_分辨率.txt", type: "file", children: [] }
-        ]},
-        { id: 7, name: "2_原始素材", type: "folder", children: [
-            { id: 8, name: "1_视频_原片", type: "folder", children: [] },
-            { id: 9, name: "2_图片", type: "folder", children: [] },
-            { id: 10, name: "3_旁白", type: "folder", children: [] },
-            { id: 11, name: "4_音效音乐", type: "folder", children: [] },
-            { id: 12, name: "5_字幕", type: "folder", children: [] },
-            { id: 13, name: "6_AE制作导出", type: "folder", children: [] },
-            { id: 14, name: "7_资料画面", type: "folder", children: [] }
-        ]},
-        { id: 15, name: "3_审稿流程", type: "folder", children: [
-            { id: 16, name: "1_ACopy初剪", type: "folder", children: [
-                { id: 17, name: "# 粗剪、草稿版.txt", type: "file", children: [] }
+    // --- 核心库：四大场景模板配置 ---
+    const templates = {
+        // 1. 标准全流程
+        full: [
+            { id: 1, name: "1_工程文件", type: "folder", children: [
+                { id: 2, name: "1_PR工程", type: "folder", children: [] },
+                { id: 3, name: "2_AE工程", type: "folder", children: [] },
+                { id: 4, name: "3_剪映工程", type: "folder", children: [] },
+                { id: 5, name: "4_达芬奇工程", type: "folder", children: [] },
+                { id: 6, name: "#{DATE}_{NAME}_版本_分辨率.txt", type: "file", children: [] }
             ]},
-            { id: 18, name: "2_BCopy精剪", type: "folder", children: [
-                { id: 19, name: "# 给客户看的预览（带水印）.txt", type: "file", children: [] }
+            { id: 7, name: "2_原始素材", type: "folder", children: [
+                { id: 8, name: "1_视频_原片", type: "folder", children: [] },
+                { id: 9, name: "2_图片", type: "folder", children: [] },
+                { id: 10, name: "3_旁白", type: "folder", children: [] },
+                { id: 11, name: "4_音效音乐", type: "folder", children: [] },
+                { id: 12, name: "5_字幕", type: "folder", children: [] },
+                { id: 13, name: "6_AE制作导出", type: "folder", children: [] },
+                { id: 14, name: "7_资料画面", type: "folder", children: [] }
             ]},
-            { id: 20, name: "3_CCopy定稿", type: "folder", children: [
-                { id: 21, name: "# 可直接上传.txt", type: "file", children: [] }
+            { id: 15, name: "3_审稿流程", type: "folder", children: [
+                { id: 16, name: "1_ACopy初剪", type: "folder", children: [{ id: 17, name: "# 粗剪、草稿版.txt", type: "file", children: [] }] },
+                { id: 18, name: "2_BCopy精剪", type: "folder", children: [{ id: 19, name: "# 给客户预览（带水印）.txt", type: "file", children: [] }] },
+                { id: 20, name: "3_CCopy定稿", type: "folder", children: [{ id: 21, name: "# 可直接上传.txt", type: "file", children: [] }] }
+            ]},
+            { id: 22, name: "4_交付文件", type: "folder", children: [
+                { id: 23, name: "1_成片", type: "folder", children: [{ id: 24, name: "#{DATE}_{NAME}_版本_分辨率.txt", type: "file", children: [] }] },
+                { id: 25, name: "2_封面图", type: "folder", children: [] },
+                { id: 26, name: "3_发布文案", type: "folder", children: [] }
+            ]},
+            { id: 27, name: "5_成片归档_{DATE}_{NAME}", type: "folder", children: [] }
+        ],
+        // 2. 企业宣传片版
+        corporate: [
+            { id: 301, name: "1_项目管理与策划", type: "folder", children: [
+                { id: 302, name: "1_脚本分镜", type: "folder", children: [] },
+                { id: 303, name: "2_客户需求单", type: "folder", children: [] }
+            ]},
+            { id: 304, name: "2_素材库", type: "folder", children: [
+                { id: 305, name: "1_A-Roll_采访素材", type: "folder", children: [] },
+                { id: 306, name: "2_B-Roll_空镜素材", type: "folder", children: [] },
+                { id: 307, name: "3_企业VI包装", type: "folder", children: [] },
+                { id: 308, name: "4_版权音乐", type: "folder", children: [] }
+            ]},
+            { id: 313, name: "3_剪辑工程", type: "folder", children: [
+                { id: 310, name: "1_PR工程", type: "folder", children: [] },
+                { id: 311, name: "2_AE包装", type: "folder", children: [] },
+                { id: 312, name: "3_达芬奇调色", type: "folder", children: [] }
+            ]},
+            { id: 314, name: "4_审片输出", type: "folder", children: [
+                { id: 315, name: "1_内部审片", type: "folder", children: [] },
+                { id: 316, name: "2_带水印_发客户", type: "folder", children: [] },
+                { id: 317, name: "3_最终交付版", type: "folder", children: [] }
             ]}
-        ]},
-        { id: 22, name: "4_交付文件", type: "folder", children: [
-            { id: 23, name: "1_成片", type: "folder", children: [
-                { id: 24, name: "#{DATE}_{NAME}_版本_分辨率.txt", type: "file", children: [] }
+        ],
+        // 3. 轻量快剪版
+        light: [
+            { id: 101, name: "1_剪辑工程", type: "folder", children: [
+                { id: 102, name: "1_剪映工程", type: "folder", children: [] },
+                { id: 103, name: "2_PR工程", type: "folder", children: [] }
             ]},
-            { id: 25, name: "2_封面图", type: "folder", children: [] },
-            { id: 26, name: "3_发布文案", type: "folder", children: [] }
-        ]},
-        { id: 27, name: "5_成片归档_{DATE}_{NAME}", type: "folder", children: [] }
-    ];
+            { id: 104, name: "2_素材库", type: "folder", children: [
+                { id: 105, name: "1_视频拍摄", type: "folder", children: [] },
+                { id: 106, name: "2_网图资料", type: "folder", children: [] },
+                { id: 107, name: "3_音乐音效", type: "folder", children: [] }
+            ]},
+            { id: 108, name: "3_输出成片", type: "folder", children: [
+                { id: 109, name: "1_预览修改", type: "folder", children: [] },
+                { id: 110, name: "2_最终定稿", type: "folder", children: [] }
+            ]}
+        ],
+        // 4. AE特效包装版
+        vfx: [
+            { id: 201, name: "1_AE合成工程", type: "folder", children: [
+                { id: 202, name: "#{DATE}_{NAME}_Comp.aep", type: "file", children: [] }
+            ]},
+            { id: 203, name: "2_三维工程_C4D", type: "folder", children: [] },
+            { id: 204, name: "3_资产库_Assets", type: "folder", children: [
+                { id: 205, name: "1_3D模型", type: "folder", children: [] },
+                { id: 206, name: "2_贴图材质", type: "folder", children: [] },
+                { id: 207, name: "3_参考图集", type: "folder", children: [] }
+            ]},
+            { id: 208, name: "4_素材输入_Footage", type: "folder", children: [
+                { id: 209, name: "1_实拍绿幕", type: "folder", children: [] },
+                { id: 210, name: "2_图片序列", type: "folder", children: [] }
+            ]},
+            { id: 211, name: "5_渲染输出_Renders", type: "folder", children: [
+                { id: 212, name: "1_单帧测试", type: "folder", children: [] },
+                { id: 213, name: "2_带通道序列", type: "folder", children: [] },
+                { id: 214, name: "3_最终成片", type: "folder", children: [] }
+            ]}
+        ]
+    };
 
-    // --- 拖拽功能逻辑 ---
+    let templateData = [];
+    let nextId = 500; 
+    
+    // --- 本地存储 (Memory) 逻辑 ---
+    function saveState() {
+        localStorage.setItem('videoProjectGeneratorState', JSON.stringify(templateData));
+    }
+
+    function loadState() {
+        let saved = localStorage.getItem('videoProjectGeneratorState');
+        if (saved) {
+            templateData = JSON.parse(saved);
+        } else {
+            templateData = JSON.parse(JSON.stringify(templates.full)); 
+        }
+        renderTree();
+    }
+
+    function loadTemplate(type) {
+        let nameMap = {
+            'full': '标准全流程',
+            'corporate': '企业宣传片',
+            'light': '轻量快剪版',
+            'vfx': 'AE特效包装版'
+        };
+        if(confirm(`切换为【${nameMap[type]}】将会覆盖你当前的自定义修改。是否继续？`)) {
+            templateData = JSON.parse(JSON.stringify(templates[type]));
+            renderTree();
+            saveState();
+        }
+    }
+
+    // --- 主题切换 (Dark Mode) 逻辑 ---
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        body.classList.toggle('dark-mode');
+        
+        if (body.classList.contains('dark-mode')) {
+            btn.innerHTML = '☀️ 浅色';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            btn.innerHTML = '🌙 深色';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeBtn').innerHTML = '☀️ 浅色';
+        }
+    }
+
+    // --- 拖拽与树状图操作逻辑 ---
     let draggedNodeId = null;
 
     function handleDragStart(e, id) {
         draggedNodeId = id;
         e.dataTransfer.effectAllowed = "move";
-        // 降低拖拽源的透明度，提升视觉体验
         setTimeout(() => e.target.style.opacity = "0.5", 0); 
     }
 
-    function handleDragEnd(e) {
-        e.target.style.opacity = "1";
-    }
-
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.currentTarget.classList.add('drag-over');
-    }
-
-    function handleDragLeave(e) {
-        e.currentTarget.classList.remove('drag-over');
-    }
+    function handleDragEnd(e) { e.target.style.opacity = "1"; }
+    function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 
     function handleDrop(e, targetId) {
         e.preventDefault();
         e.currentTarget.classList.remove('drag-over');
-        
         if (!draggedNodeId || draggedNodeId === targetId) return;
 
         let draggedInfo = findNodeAndParent(templateData, draggedNodeId);
@@ -278,11 +515,9 @@
             let sArr = draggedInfo.parentArray;
             let tArr = targetInfo.parentArray;
 
-            // 把被拖拽的节点从原数组中切出来
             let sIndex = sArr.findIndex(n => n.id === draggedNodeId);
             let nodeToMove = sArr.splice(sIndex, 1)[0];
 
-            // 插入到目标位置的前面（如果是根节点就放到最后）
             if (targetId === 'root') {
                 tArr.push(nodeToMove);
             } else {
@@ -290,22 +525,19 @@
                 tArr.splice(tIndex, 0, nodeToMove);
             }
 
-            // 执行自动重排编号功能
             autoRenumber(sArr);
             if (sArr !== tArr) autoRenumber(tArr);
 
             renderTree();
+            saveState(); 
         }
         draggedNodeId = null;
     }
 
-    // --- 自动重新编号引擎 ---
     function autoRenumber(nodesArray) {
         let counter = 1;
         nodesArray.forEach(node => {
-            // 正则匹配：检查开头是不是 "任意数字_XXX" 的格式
             if (/^\d+_/.test(node.name)) {
-                // 将开头的数字替换为顺延的正确数字
                 node.name = node.name.replace(/^\d+_/, counter + '_');
                 counter++;
             }
@@ -349,13 +581,18 @@
         return null;
     }
 
-    // --- 节点操作 ---
+    // --- 节点操作 (增删改) ---
+    function getNextId() {
+        nextId++;
+        return nextId;
+    }
+
     function addNode(parentId) {
-        let newName = prompt("请输入新名称:\n(提示: 包含扩展名如 .txt 识别为文件，以 '1_' 格式开头可参与自动排序)");
+        let newName = prompt("请输入新名称:\n(提示: 包含扩展名如 .txt 识别为文件，以数字下划线如 '1_' 开头可参与自动排序)");
         if (!newName || newName.trim() === "") return;
         
         let type = newName.includes('.') ? "file" : "folder";
-        let newNode = { id: nextId++, name: newName.trim(), type: type, children: [] };
+        let newNode = { id: getNextId(), name: newName.trim(), type: type, children: [] };
 
         if (parentId === 'root') {
             templateData.push(newNode);
@@ -368,6 +605,7 @@
             }
         }
         renderTree();
+        saveState();
     }
 
     function renameNode(id) {
@@ -377,9 +615,9 @@
             if (newName && newName.trim() !== "") {
                 target.node.name = newName.trim();
                 target.node.type = newName.includes('.') ? "file" : "folder"; 
-                // 改名后也顺便触发一次重排，防止用户手动输入了乱序的数字
                 autoRenumber(target.parentArray);
                 renderTree();
+                saveState();
             }
         }
     }
@@ -394,6 +632,7 @@
                     autoRenumber(target.parentArray);
                 }
                 renderTree();
+                saveState();
             }
         }
     }
@@ -404,7 +643,6 @@
         let icon = node.type === 'folder' ? '📁' : '📄';
         let isFileClass = node.type === 'file' ? 'is-file' : '';
         
-        // 为每个节点添加 HTML5 拖拽属性和事件
         let html = `
             <div class="node ${isFileClass}">
                 <div class="node-content" 
@@ -425,12 +663,9 @@
         
         if (node.children && node.children.length > 0) {
             html += `<div class="children-container">`;
-            node.children.forEach(child => {
-                html += createNodeHTML(child);
-            });
+            node.children.forEach(child => { html += createNodeHTML(child); });
             html += `</div>`;
         }
-        
         html += `</div>`;
         return html;
     }
@@ -439,30 +674,27 @@
         let rootName = `${getSelectedDateString()}_${getProjectName()}`;
         let container = document.getElementById('treeWindow');
         
-        // 根目录也可以作为拖拽放置的目标
         let html = `
             <div class="node">
                 <div class="node-content"
                      ondragover="handleDragOver(event)" 
                      ondragleave="handleDragLeave(event)" 
                      ondrop="handleDrop(event, 'root')">
-                    <span class="node-name" style="font-weight:bold; color:#0056b3;">📦 ${rootName} (根目录)</span>
+                    <span class="node-name" style="font-weight:bold; color:var(--accent-color);">📦 ${rootName} (根目录)</span>
                     <div class="node-actions">
                         <button class="action-btn" onclick="addNode('root')">[+新建一级目录]</button>
                     </div>
                 </div>
-                <div class="children-container" style="border-left: 2px solid #007bff;">
+                <div class="children-container" style="border-left: 2px solid var(--accent-color);">
         `;
         
-        templateData.forEach(node => {
-            html += createNodeHTML(node);
-        });
+        templateData.forEach(node => { html += createNodeHTML(node); });
         
         html += `</div></div>`;
         container.innerHTML = html;
     }
 
-    // --- 核心：一键生成项目结构 ZIP ---
+    // --- ZIP 生成逻辑 ---
     function buildZipRecursively(zipFolder, nodes) {
         nodes.forEach(node => {
             let actualName = parseVars(node.name);
@@ -478,182 +710,100 @@
     }
 
     function generateProject() {
-        if (typeof JSZip === 'undefined') {
-            alert("ZIP 组件加载失败，请检查网络！");
-            return;
-        }
-
+        if (typeof JSZip === 'undefined') { alert("ZIP 组件加载失败，请检查网络！"); return; }
         let rootFolderName = `${getSelectedDateString()}_${getProjectName()}`;
         let zip = new JSZip();
         let root = zip.folder(rootFolderName);
-        
         buildZipRecursively(root, templateData);
-
-        zip.generateAsync({type:"blob"}).then(function(content) {
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = rootFolderName + ".zip";
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }).catch(function(err) {
-            alert("生成 ZIP 失败：" + err);
-        });
+        
+        // 增加一点点击反馈的视觉延迟感，让按钮动画走完
+        setTimeout(() => {
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = rootFolderName + ".zip"; link.click(); URL.revokeObjectURL(link.href);
+            }).catch(function(err) { alert("生成 ZIP 失败：" + err); });
+        }, 200);
     }
 
-    // --- Win 离线版 ZIP (包含 BAT 和 说明文档) ---
-    function downloadBatZip() {
-        if (typeof JSZip === 'undefined') {
-            alert("ZIP 组件加载失败，请检查网络！");
-            return;
-        }
-
-        const batLines = [
-            "@echo off",
-            "chcp 65001 >nul",
+    // --- BAT 动态脚本生成引擎 ---
+    function generateBatScript() {
+        let lines = [
+            "@echo off", "chcp 65001 >nul",
             "set /p ProjectName=\"请输入项目名称 (例如: 汽车测评): \"",
-            "if \"%ProjectName%\"==\"\" set ProjectName=未命名项目",
-            "",
+            "if \"%ProjectName%\"==\"\" set ProjectName=未命名项目", "",
             ":: 获取当前日期 YYYYMMDD",
-            "for /f %%i in ('powershell -command \"Get-Date -Format yyyyMMdd\"') do set DATE_STR=%%i",
-            "",
-            "set \"ROOT_DIR=%USERPROFILE%\\Desktop\\%DATE_STR%_%ProjectName%\"",
-            "",
-            "mkdir \"%ROOT_DIR%\" 2>nul",
-            "mkdir \"%ROOT_DIR%\\1_工程文件\\1_PR工程\"",
-            "mkdir \"%ROOT_DIR%\\1_工程文件\\2_AE工程\"",
-            "mkdir \"%ROOT_DIR%\\1_工程文件\\3_剪映工程\"",
-            "mkdir \"%ROOT_DIR%\\1_工程文件\\4_达芬奇工程\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\1_视频_原片\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\2_图片\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\3_旁白\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\4_音效音乐\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\5_字幕\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\6_AE制作导出\"",
-            "mkdir \"%ROOT_DIR%\\2_原始素材\\7_资料画面\"",
-            "mkdir \"%ROOT_DIR%\\3_审稿流程\\1_ACopy初剪\"",
-            "mkdir \"%ROOT_DIR%\\3_审稿流程\\2_BCopy精剪\"",
-            "mkdir \"%ROOT_DIR%\\3_审稿流程\\3_CCopy定稿\"",
-            "mkdir \"%ROOT_DIR%\\4_交付文件\\1_成片\"",
-            "mkdir \"%ROOT_DIR%\\4_交付文件\\2_封面图\"",
-            "mkdir \"%ROOT_DIR%\\4_交付文件\\3_发布文案\"",
-            "mkdir \"%ROOT_DIR%\\5_成片归档_%DATE_STR%_%ProjectName%\"",
-            "",
-            "type nul > \"%ROOT_DIR%\\1_工程文件\\#%DATE_STR%_%ProjectName%_版本_分辨率.txt\"",
-            "type nul > \"%ROOT_DIR%\\4_交付文件\\1_成片\\#%DATE_STR%_%ProjectName%_版本_分辨率.txt\"",
-            "type nul > \"%ROOT_DIR%\\3_审稿流程\\1_ACopy初剪\\# 粗剪、草稿版.txt\"",
-            "type nul > \"%ROOT_DIR%\\3_审稿流程\\2_BCopy精剪\\# 给客户看的预览（带水印）.txt\"",
-            "type nul > \"%ROOT_DIR%\\3_审稿流程\\3_CCopy定稿\\# 可直接上传.txt\"",
-            "",
-            "start \"\" \"%ROOT_DIR%\""
+            "for /f %%i in ('powershell -command \"Get-Date -Format yyyyMMdd\"') do set DATE_STR=%%i", "",
+            "set \"ROOT_DIR=%USERPROFILE%\\Desktop\\%DATE_STR%_%ProjectName%\"", "",
+            "mkdir \"%ROOT_DIR%\" 2>nul"
         ];
 
-        const winReadmeLines = [
-            "因为这个 .bat 脚本是从浏览器下载的，Windows 为了保护电脑安全，可能会自动拦截。",
-            "如果双击无法运行或提示安全拦截，请使用以下两种方法之一解除限制：",
-            "",
-            "【方法一：一键解除锁定】（推荐）",
-            "1. 右键点击下载的 .bat 文件，选择“属性”。",
-            "2. 在“常规”选项卡的最下方，找到安全提示：“此文件来自其他计算机...”。",
-            "3. 勾选旁边的“解除锁定”框。",
-            "4. 点击“确定”，即可正常双击运行。",
-            "",
-            "【方法二：本地新建法】",
-            "1. 右键点击下载的 .bat 文件，选择“编辑”（或用记事本打开）。",
-            "2. 复制里面的所有代码。",
-            "3. 在你的电脑桌面上新建一个普通的文本文档 (.txt)。",
-            "4. 把刚才复制的代码粘贴进去并保存。",
-            "5. 将这个新文档的后缀名从 .txt 改为 .bat，即可完美运行。"
-        ];
+        function traverseForBat(nodes, currentPath) {
+            nodes.forEach(node => {
+                let safeName = node.name.replace(/\{DATE\}/g, "%DATE_STR%").replace(/\{NAME\}/g, "%ProjectName%");
+                let newPath = currentPath + "\\\\" + safeName;
+                if (node.type === 'folder') {
+                    lines.push(`mkdir "${newPath}"`);
+                    if (node.children) traverseForBat(node.children, newPath);
+                } else {
+                    lines.push(`type nul > "${newPath}"`);
+                }
+            });
+        }
+        traverseForBat(templateData, "%ROOT_DIR%");
+        lines.push("", "start \"\" \"%ROOT_DIR%\"");
+        return lines;
+    }
 
+    function downloadBatZip() {
         let zip = new JSZip();
-        zip.file("新建剪辑项目_Win离线版.bat", batLines.join('\r\n'));
-        zip.file("Windows电脑如何运行.txt", winReadmeLines.join('\r\n'));
-
-        zip.generateAsync({type:"blob"}).then(function(content) {
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = "Win离线版生成器套件.zip";
-            link.click();
-            URL.revokeObjectURL(link.href);
+        zip.file("新建剪辑项目_Win离线版.bat", generateBatScript().join('\r\n'));
+        zip.file("Windows电脑如何运行.txt", "1.右键下载的 .bat 文件选择属性，勾选[解除锁定]\r\n2.双击运行即可根据最新模板生成结构。");
+        zip.generateAsync({type:"blob"}).then(content => {
+            let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Win离线版生成器.zip"; link.click();
         });
     }
 
-    // --- Mac 离线版 ZIP (包含 COMMAND 和 说明文档) ---
-    function downloadCommandZip() {
-        if (typeof JSZip === 'undefined') {
-            alert("ZIP 组件加载失败，请检查网络！");
-            return;
-        }
-
-        const macLines = [
-            "#!/bin/bash",
-            "",
+    // --- Mac 动态脚本生成引擎 ---
+    function generateMacScript() {
+        let lines = [
+            "#!/bin/bash", "",
             "echo \"请输入项目名称 (例如: 汽车测评):\"",
             "read ProjectName",
-            "if [ -z \"$ProjectName\" ]; then",
-            "  ProjectName=\"未命名项目\"",
-            "fi",
-            "",
+            "if [ -z \"$ProjectName\" ]; then ProjectName=\"未命名项目\"; fi", "",
             "DATE_STR=$(date +%Y%m%d)",
-            "ROOT_DIR=\"$HOME/Desktop/${DATE_STR}_${ProjectName}\"",
-            "",
-            "mkdir -p \"$ROOT_DIR/1_工程文件/1_PR工程\"",
-            "mkdir -p \"$ROOT_DIR/1_工程文件/2_AE工程\"",
-            "mkdir -p \"$ROOT_DIR/1_工程文件/3_剪映工程\"",
-            "mkdir -p \"$ROOT_DIR/1_工程文件/4_达芬奇工程\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/1_视频_原片\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/2_图片\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/3_旁白\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/4_音效音乐\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/5_字幕\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/6_AE制作导出\"",
-            "mkdir -p \"$ROOT_DIR/2_原始素材/7_资料画面\"",
-            "mkdir -p \"$ROOT_DIR/3_审稿流程/1_ACopy初剪\"",
-            "mkdir -p \"$ROOT_DIR/3_审稿流程/2_BCopy精剪\"",
-            "mkdir -p \"$ROOT_DIR/3_审稿流程/3_CCopy定稿\"",
-            "mkdir -p \"$ROOT_DIR/4_交付文件/1_成片\"",
-            "mkdir -p \"$ROOT_DIR/4_交付文件/2_封面图\"",
-            "mkdir -p \"$ROOT_DIR/4_交付文件/3_发布文案\"",
-            "mkdir -p \"$ROOT_DIR/5_成片归档_${DATE_STR}_${ProjectName}\"",
-            "",
-            "touch \"$ROOT_DIR/1_工程文件/#${DATE_STR}_${ProjectName}_版本_分辨率.txt\"",
-            "touch \"$ROOT_DIR/4_交付文件/1_成片/#${DATE_STR}_${ProjectName}_版本_分辨率.txt\"",
-            "touch \"$ROOT_DIR/3_审稿流程/1_ACopy初剪/# 粗剪、草稿版.txt\"",
-            "touch \"$ROOT_DIR/3_审稿流程/2_BCopy精剪/# 给客户看的预览（带水印）.txt\"",
-            "touch \"$ROOT_DIR/3_审稿流程/3_CCopy定稿/# 可直接上传.txt\"",
-            "",
-            "open \"$ROOT_DIR\""
+            "ROOT_DIR=\"$HOME/Desktop/${DATE_STR}_${ProjectName}\"", ""
         ];
 
-        const macReadmeLines = [
-            "Mac 系统出于安全考虑，默认不允许直接双击运行刚下载的脚本文件。",
-            "首次运行，请按照以下步骤赋予权限：",
-            "",
-            "1. 打开 Mac 的“终端”应用（可以在“启动台”->“其他”中找到，或者按 Command+空格 搜索 Terminal）。",
-            "2. 在终端窗口中输入：chmod +x （注意 x 后面有一个空格！）。",
-            "3. 将旁边那个 .command 脚本文件直接拖拽到终端窗口中，路径会自动填入。",
-            "4. 按下回车键。",
-            "",
-            "权限赋予成功！以后每次只需双击这个 .command 文件即可直接运行并生成文件夹。"
-        ];
+        function traverseForMac(nodes, currentPath) {
+            nodes.forEach(node => {
+                let safeName = node.name.replace(/\{DATE\}/g, "${DATE_STR}").replace(/\{NAME\}/g, "${ProjectName}");
+                let newPath = currentPath + "/" + safeName;
+                if (node.type === 'folder') {
+                    lines.push(`mkdir -p "${newPath}"`);
+                    if (node.children) traverseForMac(node.children, newPath);
+                } else {
+                    lines.push(`touch "${newPath}"`);
+                }
+            });
+        }
+        traverseForMac(templateData, "$ROOT_DIR");
+        lines.push("", "open \"$ROOT_DIR\"");
+        return lines;
+    }
 
+    function downloadCommandZip() {
         let zip = new JSZip();
-        zip.file("新建剪辑项目_Mac离线版.command", macLines.join('\n'));
-        zip.file("Mac电脑如何运行.txt", macReadmeLines.join('\n'));
-
-        zip.generateAsync({type:"blob"}).then(function(content) {
-            let link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = "Mac离线版生成器套件.zip";
-            link.click();
-            URL.revokeObjectURL(link.href);
+        zip.file("新建剪辑项目_Mac离线版.command", generateMacScript().join('\n'));
+        zip.file("Mac电脑如何运行.txt", "首次运行需打开终端，输入 chmod +x 并空格，然后将 .command 文件拖入回车，赋予权限后即可双击运行。");
+        zip.generateAsync({type:"blob"}).then(content => {
+            let link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = "Mac离线版生成器.zip"; link.click();
         });
     }
 
     // --- 初始化 ---
     document.addEventListener('DOMContentLoaded', function() {
+        initTheme();
         document.getElementById('projectDate').value = getTodayForInput();
-        renderTree();
+        loadState(); 
     });
 </script>
 
